@@ -12,7 +12,6 @@ if (!mongoURI) {
   process.exit(1);
 }
 
-// Aumentamos el timeout de selección de servidor a 30 segundos
 const options = {
   serverSelectionTimeoutMS: 30000,
 };
@@ -30,12 +29,11 @@ mongoose.connect(mongoURI, options)
     }
   })
   .then(() => {
-    if (arguments.length > 0) console.log("✅ 20 espacios creados");
-    console.log("🚀 API lista para usar");
+    console.log("✅ Espacios verificados/creados");
   })
   .catch(error => {
     console.error("❌ Error de conexión a MongoDB:", error.message);
-    console.error("Stacktrace:", error.stack);
+    console.error("Detalles:", error);
     process.exit(1);
   });
 
