@@ -1,30 +1,26 @@
 const mongoose = require("mongoose");
 const app = require("./app");
 const Espacio = require("./models/espacio.model");
-const { DB_HOST, DB_NAME } = require("./constante");
 
 const port = process.env.PORT || 4000;
 
-// Conexión a MongoDB
-mongoose.connect(`mongodb://${DB_HOST}/${DB_NAME}`)
+//se usa la variable MONGODB_URI si existe, si no, pos usa la conexión local xd
+const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/estacionamiento";
+
+mongoose.connect(mongoURI)
   .then(() => {
-    console.log("Conectado a MongoDB");
-    // Después de conectar, se verifica si hay espacios
+    console.log("Conectado a MongoDB en:", mongoURI.includes("mongodb.net") ? "Atlas" : "Local");
     return Espacio.countDocuments();
   })
   .then(async (count) => {
     if (count === 0) {
       const espacios = Array.from({ length: 20 }, (_, i) => ({ numero: i + 1, estado: "libre" }));
       await Espacio.insertMany(espacios);
-      console.log("20 espacios creados en la base de datos");
+      console.log("20 espacios creados");
     }
   })
-  .catch(error => console.log(error));
+  .catch(error => console.log("Error de conexión a MongoDB:", error));
 
-// El servidor Express escucha en el puerto definido
 app.listen(port, () => {
-  console.log("**********************************");
-  console.log("****** API Estacionamiento *******");
-  console.log("**********************************");
-  console.log(`http://localhost:${port}/api/`);
+  console.log(`API Estacionamiento en puerto ${port}`);
 });
