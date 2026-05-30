@@ -14,31 +14,31 @@ if (!mongoURI) {
   process.exit(1);
 }
 
-// Conexión inmediata y forzamos el error a aparecer en logs
-mongoose.connect(mongoURI, {
-  serverSelectionTimeoutMS: 15000
-})
-  .then(() => {
+async function startServer() {
+  try {
+    await mongoose.connect(mongoURI, {
+      serverSelectionTimeoutMS: 30000,
+    });
     console.log("✅ CONECTADO A MONGODB ATLAS");
-    return Espacio.countDocuments();
-  })
-  .then(count => {
+
+    const count = await Espacio.countDocuments();
     console.log(`📊 Espacios existentes: ${count}`);
+
     if (count === 0) {
       const espacios = Array.from({ length: 20 }, (_, i) => ({ numero: i + 1, estado: "libre" }));
-      return Espacio.insertMany(espacios);
+      await Espacio.insertMany(espacios);
+      console.log("✅ 20 espacios creados");
     }
-  })
-  .then(() => {
-    console.log("🚀 Base de datos lista");
-  })
-  .catch(err => {
-    console.error("❌ ERROR DE CONEXIÓN A MONGODB:");
-    console.error(err.message);
-    console.error(err.stack);
-    // No hacemos process.exit para que el servidor igual arranque (pero sin DB)
-  });
 
-app.listen(port, () => {
-  console.log(`🚀 Servidor HTTP escuchando en puerto ${port}`);
-});
+    app.listen(port, () => {
+      console.log(`🚀 Servidor HTTP escuchando en puerto ${port}`);
+    });
+  } catch (error) {
+    console.error("❌ ERROR DE CONEXIÓN A MONGODB:");
+    console.error(error.message);
+    console.error(error.stack);
+    process.exit(1);
+  }
+}
+
+startServer();
